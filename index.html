@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL</title>
+</head>
+
+<body>
+    <h1>Transactions</h1>
+
+    <label for="fromDate">fromDate:</label>
+    <input type="text" id="startDate">
+    <br><br>
+
+    <label for="toDate">toDate:</label>
+    <input type="text" id="endDate">
+    <br><br>
+
+    <a id="search" href="">
+        <button>Search</button>
+    </a>
+    <br><br>
+
+    <div id="result">
+        <h2>OutPut:</h2>
+        <p id="data"></p>
+    </div>
+
+    <a id="downloadButton" download>
+        <button>Download CSV file</button>
+    </a>
+
+    <script src="config.js"></script>
+    <script src="CSVFile.js"></script>
+    <script src="APIService.js"></script>
+
+    <script>
+        const api = new APIService();
+        const csvFile = new CSVFile();
+        let output = "";
+
+        document.getElementById("search").addEventListener('click', async function () {
+            event.preventDefault();
+            await showData();
+        });
+
+        document.getElementById("downloadButton").addEventListener('click', function () {
+            event.preventDefault();
+            csvFile.downloadCSV(output);
+        })
+
+        async function showData() {
+            if (document.getElementById("startDate").value.trim() === "" || document.getElementById("endDate").value.trim() === "") {
+                document.getElementById('data').innerText = "Both inputs are necessary!";
+            } else {
+                let startDate = document.getElementById("startDate").value;
+                let endDate = document.getElementById("endDate").value;
+                let data = await api.getData("/transactions", startDate, endDate);
+                if (typeof data == 'string') {
+                    document.getElementById('data').innerText = data;
+                } else {
+                    let formattedData = csvFile.jsonToCsv(csvFile.formatData(data.data, startDate, endDate));
+                    output = formattedData;
+                    document.getElementById('data').innerText = output;
+                }
+            }
+
+
+        }
+
+
+    </script>
+
+
+
+</body>
+
+</html>
